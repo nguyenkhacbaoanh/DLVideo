@@ -1,12 +1,11 @@
-# requirement installation "pip install pafy"
 from tkinter import *
 from tkinter.filedialog import * #to open and find files
-from PIL import Image, ImageTk
+import pafy
 
 class App:
     def __init__(self):
-        root = Tk()
-        root.title("Download Youtube")
+        self.root = Tk()
+        self.root.title("Download Youtube")
         
         #canvas
         # im = PhotoImage(file='bg.png')
@@ -15,70 +14,78 @@ class App:
         # canvas.pack()
 
         # create a menu
-        menu = Menu(root)
-        root.config(menu=menu)
+        self.menu = Menu(self.root)
+        self.root.config(menu=self.menu)
 
-        filemenu = Menu(menu)
-        menu.add_cascade(label="File", menu=filemenu)
-        filemenu.add_command(label="New", command=self.find_direction)
-        filemenu.add_command(label="Open...", command=self.find_direction)
-        filemenu.add_separator()
-        filemenu.add_command(label="Exit", command=exit)
+        self.filemenu = Menu(self.menu)
+        self.menu.add_cascade(label="File", menu=self.filemenu)
+        self.filemenu.add_command(label="New", command=self.find_direction)
+        self.filemenu.add_command(label="Open...", command=self.find_direction)
+        self.filemenu.add_separator()
+        self.filemenu.add_command(label="Exit", command=exit)
 
-        helpmenu = Menu(menu)
-        menu.add_cascade(label="Help", menu=helpmenu)
-        helpmenu.add_command(label="About...", command=self.find_direction)
-
-        # Entry and label
-        # fields = "Link Video", "Save"
-        # ents = self.makeform(root, fields)
-        url_label = Label(root, width=15, text="Link Video", bg="blue").grid(row=0,column=0)
-        url = Entry(root).grid(row=0,column=1,padx=15,pady=15,ipadx=50,ipady=10,sticky="e")
-
-        save_local_label = Label(root, width=15, text="Save Location", bg="blue").grid(row=1,column=0)
-        save_local = Entry(root).grid(row=1,column=1,padx=15,pady=15,ipadx=50,ipady=10,sticky="e")
+        self.helpmenu = Menu(self.menu)
+        self.menu.add_cascade(label="Help", menu=self.helpmenu)
+        self.helpmenu.add_command(label="About...", command=self.find_direction)
         
         # button
-        b1 = Button(root, text="Download").grid(row=2,column=1,padx=15,sticky="w")
-        # b1.pack(side=LEFT, padx=5, pady=5)
+        self.b1 = Button(self.root, text="Download", command=self.download)
+        self.b1.grid(row=3,column=1,padx=15,sticky="w")
+    
+        self.b2 = Button(self.root, text='Quit', command=self.root.quit)
+        self.b2.grid(row=3,column=1,padx=15,sticky="e")
+        
+        self.b3 = Button(self.root, text='...', bg="white", command=self.get_value_from_button)
+        self.b3.grid(row=2, column=3)
 
-        b2 = Button(root, text='Quit', command=root.quit).grid(row=2,column=1,padx=15,sticky="e")
-        # b2.pack(side=LEFT, padx=5, pady=5)
+        self.b4 = Button(self.root, text='...', command=lambda:self.url.delete(0, END))
+        self.b4.grid(row=0, column=3)
 
-        b3 = Button(root, text='Here').grid(row=1, column=3)
-        # b3.grid(row=1, column=3)
-        # b3.pack(side=LEFT, padx=5, pady=5)
-        # b3.place(relx=1, x=-2, y=10, anchor=NE)
+        # Entry and label
+        url_label = Label(self.root, width=15, text="Link Video", bg="blue").grid(row=0,column=0)
+        self.url = Entry(self.root)
+        self.url.grid(row=0,column=1,padx=15,pady=15,ipadx=50,ipady=10,sticky="e")
 
-        b4 = Button(root, text='...', bg="white")
-        # b4.pack(side=LEFT, padx=5, pady=5)
-        # b4.place(relx=1, x=-2, y=2, anchor=NE)
+        #checkbox
+        # it means that we will download a video high quality possible
+        self.check_quality = Checkbutton(self.root, text="Best resolution")
+        self.check_quality.grid(row=1, column=1)
 
-        # # label1 = Label(root, text='Link Video').grid(row=2, column=2)
-        # # label2 = Label(root, text='Save').grid(row=4, column=2)
-
-        # # entry1 = Entry(root).grid(row=2, column=3)
-        # # entry2 = Entry(root).grid(row=4, column=3)
-
-        mainloop()
+        save_local_label = Label(self.root, width=15, text="Save Location", bg="blue").grid(row=2,column=0)
+        self.save_local = Entry(self.root)
+        self.save_local.grid(row=2,column=1,padx=15,pady=15,ipadx=50,ipady=10,sticky="e")
+        
+        
 
 
     # save file:
+    # Open filedialog and return adress of save's location
     def find_direction(self):
-        location_file = askopenfilename(title="Save your directory",filetypes=[('video files','.mp4','.avi'),('all files','.*')])
+        location_file_save = asksaveasfilename(title="Save your video",parent=self.root,filetypes=[('video files','.mp4'),('webm','.webm'),('all files','.*')])
+        return str(location_file_save)
     
-    def makeform(self, root, fields):
-        entries = []
-        for field in fields:
-            row = Frame(root)
-            lab = Label(row, width=15, text=field, anchor='w')
-            ent = Entry(row)
-            row.pack(side=TOP, fill=X, padx=5, pady=5)
-            lab.pack(side=LEFT)
-            ent.pack(side=RIGHT, expand=YES, fill=X)
-            entries.append((field, ent))
-        return entries
+    # get value save's location in Entry
+    def get_value_from_button(self):
+        self.adr = self.find_direction()
+        self.save_local.delete(0, END)
+        self.save_local.insert(0, self.adr)
+
+    def download(self):
+        video = pafy.new(self.url.get())
+        if self.check_quality['indicatoron'] == 1: #checkbox: whether best_resolution have clicked or not
+            best = video.getbest()
+        else:
+            best = video.getbest(preftype="webm")
+        return best.download(quiet=False)
+    
+
+    def run_code(self):
+        mainloop()
+
+
 
 if __name__ == '__main__':
-    App()
+    app = App()
+    if True:
+        app.run_code()
     
