@@ -183,7 +183,7 @@ class App(Frame):
 
     @progress_bar
     def download(self):
-        if self.spamVar.get() == 'No':
+        if self.spamVar.get() == 'No' or self.spamVar.get() == '':
             choice = self.get_videos_streams
         elif self.spamVar.get() == 'Yes':
             choice = self.get_audios_streams
